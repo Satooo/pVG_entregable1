@@ -95,53 +95,61 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        Run();
-        FlipSprite();
-        if (GameManager.Instance.pause == false)
+        if (GameManager.Instance.pause == true)
+        {
+            
+        }
+        else
         {
             CallTP();
-        }
+            Run();
+            FlipSprite();
+            if (GameManager.Instance.pause == false)
+            {
+                CallTP();
+            }
         
 
-       if(isInTheAir){
-            if(Mathf.Abs(rb.velocity.y) < Mathf.Epsilon){
-                rb.gravityScale = 2f;
-                animator.SetBool("IsFallingIdle", true);
-            }
-        }else{
-            animator.SetBool("IsFallingIdle", false);
-        }
-
-        if(touchingWall){
-            wallTimer-=Time.deltaTime;
-            if(wallTimer>0){
-                rb.gravityScale = fallSpeed;
-                animator.SetBool("IsFalling", true);
+           if(isInTheAir){
+                if(Mathf.Abs(rb.velocity.y) < Mathf.Epsilon){
+                    rb.gravityScale = 2f;
+                    animator.SetBool("IsFallingIdle", true);
+                }
             }else{
-                rb.gravityScale = 2f;
-                animator.SetBool("IsFalling", false);
-                animator.SetBool("IsFallingIdle", true);
-                touchingWall=false;
-            }  
-        }
+                animator.SetBool("IsFallingIdle", false);
+            }
 
-        if(wallJumping){
-            wallJumpTimer-=Time.deltaTime;
-            if(wallJumpTimer>=0){
-                if(movingRight){
-                    rb.velocity -= new Vector2(5f, 0f);
-                    transform.localScale = new Vector3(
-                        Mathf.Sign(rb.velocity.x),
-                        1f,
-                        1f
-                    );
+            if(touchingWall){
+                wallTimer-=Time.deltaTime;
+                if(wallTimer>0){
+                    rb.gravityScale = fallSpeed;
+                    animator.SetBool("IsFalling", true);
                 }else{
-                    rb.velocity += new Vector2(5f, 0f);
-                    transform.localScale = new Vector3(
-                        Mathf.Sign(rb.velocity.x),
-                        1f,
-                        1f
-                    );
+                    rb.gravityScale = 2f;
+                    animator.SetBool("IsFalling", false);
+                    animator.SetBool("IsFallingIdle", true);
+                    touchingWall=false;
+                }  
+            }
+
+            if(wallJumping){
+                wallJumpTimer-=Time.deltaTime;
+                if(wallJumpTimer>=0){
+                    if(movingRight){
+                        rb.velocity -= new Vector2(5f, 0f);
+                        transform.localScale = new Vector3(
+                            Mathf.Sign(rb.velocity.x),
+                            1f,
+                            1f
+                        );
+                    }else{
+                        rb.velocity += new Vector2(5f, 0f);
+                        transform.localScale = new Vector3(
+                            Mathf.Sign(rb.velocity.x),
+                            1f,
+                            1f
+                        );
+                    }
                 }
             }
         }
