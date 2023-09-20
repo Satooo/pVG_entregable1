@@ -35,7 +35,9 @@ public class PlayerMovement : MonoBehaviour
 
     private bool movingRight = true;
 
-
+    [Header("Teleport")]
+    [SerializeField] private float TpLength = 4;
+    private bool CanTP = false;
     private void Start() 
     {
         rb = GetComponent<Rigidbody2D>();   
@@ -95,7 +97,11 @@ public class PlayerMovement : MonoBehaviour
     {
         Run();
         FlipSprite();
-       
+        if (GameManager.Instance.pause == false)
+        {
+            CallTP();
+        }
+        
 
        if(isInTheAir){
             if(Mathf.Abs(rb.velocity.y) < Mathf.Epsilon){
@@ -202,6 +208,27 @@ public class PlayerMovement : MonoBehaviour
             isInTheAir = false;
             touchingWall=true;
             wallTimer=0.5f;         
+        }
+    }
+    public void Teleport()
+    {
+        if (transform.localScale.x == 1)
+        {
+            transform.position = new Vector3(transform.position.x + TpLength, transform.position.y, transform.position.z);
+
+
+        }
+        else if (transform.localScale.x == -1)
+        {
+            transform.position = new Vector3(transform.position.x - TpLength, transform.position.y, transform.position.z);
+
+        }
+    }
+    public void CallTP()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        {
+            Teleport();
         }
     }
 }

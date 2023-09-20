@@ -27,11 +27,13 @@ public class MenuPausa : MonoBehaviour
     {
         juegoPausado = true;
         Time.timeScale = 0f;
+        GameManager.Instance.pause = true;
         botonPausa.SetActive(false);
         menuPausa.SetActive(true);
     }
     public void Reanudar()
     {
+        GameManager.Instance.pause = false;
         juegoPausado = false;
         Time.timeScale = 1f;
         botonPausa.SetActive(true);
