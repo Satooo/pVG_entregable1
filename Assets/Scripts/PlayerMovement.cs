@@ -35,6 +35,8 @@ public class PlayerMovement : MonoBehaviour
 
     private bool movingRight = true;
 
+    public SoundManagerScript soundManagerScript;
+
 
     private void Start() 
     {
@@ -65,6 +67,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (value.isPressed)
         {
+            SoundManagerScript.PlaySound("jump");
             if (
                 capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Ground")) 
             ){
@@ -137,16 +140,20 @@ public class PlayerMovement : MonoBehaviour
                         1f
                     );
                 }
+            }else{
+                wallJumping=false;
             }
         }
 
         if(Input.GetKey("x")){
+            SoundManagerScript.PlaySound("dash");
             OnAttack();
         }
         if(attacking){
             attackTimer-=Time.deltaTime;
             if(attackTimer<=0){
                 animator.SetBool("IsAttacking", false);
+                attacking=false;
             }
         }
     }
@@ -173,11 +180,12 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.SetBool("IsRunning", true);
         }
-        
+
         rb.velocity = new Vector2(
-            runSpeed * moveDirection,
-            rb.velocity.y
-        );
+                        runSpeed * moveDirection,
+                        rb.velocity.y
+                    );
+        
         Debug.Log(moveDirection);
         Debug.Log(movingRight);
         if(moveDirection>0){
