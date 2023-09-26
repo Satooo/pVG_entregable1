@@ -1,152 +1,170 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField]
-    private float runSpeed = 10f;
-    [SerializeField]
-    private float jumpSpeed = 10f;
+    // Variables that can be change from unity
+    [Header("Speeds")]
+    [SerializeField] private float runSpeed = 4f;
+    [SerializeField] private float jumpSpeed = 12f;
+    [SerializeField] private float fallSpeed = 2f;
+    [Header("Timer")][SerializeField] private float wallTimerSlip = 1f;
+    [Header("Teleport")][SerializeField] private float TpLength = 5;
 
-    private float moveDirection = 0f;
-    public bool isInTheAir = true;
-    private bool touchingWall = false;
+
+
+    // Initialized on Start()
     private Rigidbody2D rb;
     private Animator animator;
     private CapsuleCollider2D capsuleCollider;
+    private readonly SoundManagerScript soundManagerScript; // Not initialized
 
+
+
+    private float moveDirection = 0f;
     private float leftWall = -9.1394f;
-
-    public float fallSpeed = 10f;
-
-    private bool wallJumping=false;
-
     private float wallJumpTimer = 0.5f;
-
-    private float wallTimer = 0.5f;
-
+    private float wallTimer = 0f;
     private float attackTimer = 1f;
+    private bool isMovingRight = true;
+    private bool isTouchingWall = false;
+    private bool isInTheAir = true;
+    private bool isWallJumping = false;
+    private bool isAttacking = false;
+    private bool isFallingIdle = false;
+    private bool canTP = false;
 
-    private bool attacking = false;
-
-    private bool movingRight = true;
-
-    public SoundManagerScript soundManagerScript;
 
 
-    [Header("Teleport")]
-    [SerializeField] private float TpLength = 4;
-    private bool CanTP = false;
-    private void Start() 
+
+
+    // MonoBehaviour class method
+    // Start is called before the first frame update
+    private void Start()
     {
-        rb = GetComponent<Rigidbody2D>();   
+        rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
     }
 
+
+    // Key movements
     private void OnMove(InputValue value)
     {
         moveDirection = value.Get<float>();
     }
-
-    private void OnAttack(){
-        attackTimer=1f;
-        attacking=true;
-        animator.SetBool("IsAttacking", true);
-        if(movingRight){
-            rb.velocity += new Vector2(15f, 0f);
-        }else{
-            rb.velocity -= new Vector2(15f, 0f);
-            
-        }
-        
-    }
-
     private void OnJump(InputValue value)
     {
         if (value.isPressed)
         {
-            SoundManagerScript.PlaySound("jump");
-            if (
-                capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Ground")) 
-            ){
-                // Saltar
+            SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Jump);
+            // Player can only jump if is touching any ColliderLayerMask
+            if (capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Ground")))
+            {
+                // change animation idle/running->IsJumping
                 animator.SetBool("IsJumping", true);
+                // push to jump
                 rb.velocity += new Vector2(0f, jumpSpeed);
                 isInTheAir = true;
-            }else if(capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Wall"))){
+            }
+            else if (capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Wall")))
+            {
+                // Change animation jumping->IsWallJumping
                 animator.SetBool("IsWallJumping", true);
-                animator.SetBool("IsFalling", false);
-
-                /* transform.localScale = new Vector3(
-                    Mathf.Sign(rb.velocity.x),
-                    1f,
-                    1f
-                ); */
-                rb.velocity += new Vector2(1f, jumpSpeed/2);
-
-                wallJumping=true;
-                wallJumpTimer=0.5f;
-                
+                // push to jump
+                rb.velocity += new Vector2(1f, jumpSpeed / 2);
+                isWallJumping = true;
+                wallJumpTimer = 0.5f;
                 isInTheAir = true;
             }
         }
     }
-
-    private void Update()
+    private void OnAttack()
     {
-        if (GameManager.Instance.pause == true)
+        attackTimer = 1f;
+        isAttacking = true;
+        animator.SetBool("IsAttacking", true);
+        if (isMovingRight)
         {
-            
+            rb.velocity += new Vector2(15f, 0f);
         }
         else
         {
-            CallTP();
+            rb.velocity -= new Vector2(15f, 0f);
+        }
+    }
+
+
+    // MonoBehaviour class method
+    // Update is called once per frame
+    private void Update()
+    {
+        if (!GameManager.Instance.pause)
+        {
             Run();
             FlipSprite();
-            if (GameManager.Instance.pause == false)
+            CallTP();
+            Dash();
+
+            if (isInTheAir)
             {
-                CallTP();
-            }
-        
-
-           if(isInTheAir){
-                if(Mathf.Abs(rb.velocity.y) < Mathf.Epsilon){
-                    rb.gravityScale = 2f;
-                    animator.SetBool("IsFallingIdle", true);
+                // Player reaches highest place during jump
+                if (Mathf.Abs(rb.velocity.y) < Mathf.Epsilon)
+                {
+                    rb.gravityScale *= 2f;
                 }
-            }else{
-                animator.SetBool("IsFallingIdle", false);
+                // Player is falling idle
+                else if (rb.velocity.y < Mathf.Epsilon)
+                {
+                    if (isFallingIdle == false)
+                    {
+                        animator.SetBool("IsJumping", false);
+                        animator.SetBool("IsFallingIdle", true);
+                        isFallingIdle = true;
+                    }
+                }
             }
 
-            if(touchingWall){
-                wallTimer-=Time.deltaTime;
-                if(wallTimer>0){
-                    rb.gravityScale = fallSpeed;
+            if (isTouchingWall)
+            {
+                Debug.Log(wallTimer);
+                wallTimer -= Time.deltaTime;
+                if (wallTimer > 0)
+                {
+                    rb.gravityScale = 2f;
                     animator.SetBool("IsFalling", true);
-                }else{
+                }
+                else
+                {
                     rb.gravityScale = 2f;
                     animator.SetBool("IsFalling", false);
                     animator.SetBool("IsFallingIdle", true);
-                    touchingWall=false;
-                }  
+                    isTouchingWall = false;
+                }
             }
 
-            if(wallJumping){
-                wallJumpTimer-=Time.deltaTime;
-                if(wallJumpTimer>=0){
-                    if(movingRight){
+            if (isWallJumping)
+            {
+                wallJumpTimer -= Time.deltaTime;
+                if (wallJumpTimer >= 0)
+                {
+                    if (isMovingRight)
+                    {
                         rb.velocity -= new Vector2(5f, 0f);
                         transform.localScale = new Vector3(
                             Mathf.Sign(rb.velocity.x),
                             1f,
                             1f
                         );
-                    }else{
+                    }
+                    else
+                    {
                         rb.velocity += new Vector2(5f, 0f);
                         transform.localScale = new Vector3(
                             Mathf.Sign(rb.velocity.x),
@@ -155,38 +173,77 @@ public class PlayerMovement : MonoBehaviour
                         );
                     }
                 }
-            }else{
-                wallJumping=false;
             }
-        }
+            else
+            {
+                isWallJumping = false;
+            }
 
-        if(Input.GetKey("x")){
-            SoundManagerScript.PlaySound("dash");
-            OnAttack();
-        }
-        if(attacking){
-            attackTimer-=Time.deltaTime;
-            if(attackTimer<=0){
-                animator.SetBool("IsAttacking", false);
-                attacking=false;
+            if (isAttacking)
+            {
+                attackTimer -= Time.deltaTime;
+                if (attackTimer <= 0)
+                {
+                    animator.SetBool("IsAttacking", false);
+                    isAttacking = false;
+                }
             }
         }
     }
 
-    private void FlipSprite()
+
+    // Collisions function
+    private void OnCollisionEnter2D(Collision2D other)
     {
-        if (Mathf.Abs(rb.velocity.x) > Mathf.Epsilon)
-        {     
-            transform.localScale = new Vector3(
-                Mathf.Sign(rb.velocity.x),
-                1f,
-                1f
-            );
+        if (other.transform.CompareTag("Platform"))
+        {
+            foreach (ContactPoint2D contact in other.contacts)
+            {
+                Debug.Log("HAHAHAHAHAHAHAHAHAHA"+ contact);
+                // Check if the collision point is below the player's center (feet).
+                // Only Y axis is checked
+                if (contact.point.y < transform.position.y)
+                {
+                    // End jumping animation
+                    animator.SetBool("IsJumping", false);
+                    animator.SetBool("IsFalling", false);
+                    animator.SetBool("IsWallJumping", false);
+                    animator.SetBool("IsFallingIdle", false);
+                    rb.gravityScale = 1f;
+
+                    isInTheAir = false;
+                    isFallingIdle = false;
+                }
+                // ELSE: Collision with any other part that is not the bottom of Y
+            }
+        }
+        else if (other.transform.CompareTag("GameWall"))
+        {
+            wallTimer = wallTimerSlip;
+            isTouchingWall = true;
+
+            isInTheAir = false;
+            isFallingIdle = false;
         }
     }
 
+    private void OnCollisionExit2D(Collision2D other)
+    {
+        if (other.transform.CompareTag("GameWall"))
+        {
+            Debug.Log("SE SEPARO");
+            // The player has stopped touching the GameWall
+            isTouchingWall = false;
+            isInTheAir = true;
+        }
+    }
+
+
+
+    // Player movement functions
     private void Run()
     {
+        // Conditional to change animation idle->running
         if (moveDirection == 0f)
         {
             animator.SetBool("IsRunning", false);
@@ -196,35 +253,40 @@ public class PlayerMovement : MonoBehaviour
             animator.SetBool("IsRunning", true);
         }
 
+        // Player movement on X axis
         rb.velocity = new Vector2(
-                        runSpeed * moveDirection,
-                        rb.velocity.y
-                    );
-        
-        Debug.Log(moveDirection);
-        Debug.Log(movingRight);
-        if(moveDirection>0){
-            movingRight=true;
-        }else if(moveDirection<0){
-            movingRight=false;
+            runSpeed * moveDirection,
+            rb.velocity.y
+        );
+
+        // X axis movement side
+        if (moveDirection > 0)
+        {
+            isMovingRight = true;
+        }
+        else if (moveDirection < 0)
+        {
+            isMovingRight = false;
         }
     }
-
-    private void OnCollisionEnter2D(Collision2D other) 
+    private void FlipSprite()
     {
-        if (other.transform.CompareTag("Platform"))
+        // If the player is in movement, it's body direction will change
+        if (Mathf.Abs(rb.velocity.x) > Mathf.Epsilon)
         {
-            // Finalizo el salto
-            animator.SetBool("IsJumping", false);
-            animator.SetBool("IsFalling", false);
-            animator.SetBool("IsFallingIdle", false);
-            animator.SetBool("IsWallJumping", false);
-            isInTheAir = false;
-            rb.gravityScale = 1f;
-        }else if(other.transform.CompareTag("GameWall")){
-            isInTheAir = false;
-            touchingWall=true;
-            wallTimer=0.5f;         
+            // Change the direction of the player's body
+            transform.localScale = new Vector3(
+                Mathf.Sign(rb.velocity.x), // the function returns -1 or +1 if the values are negative or positive
+                1f,
+                1f
+            );
+        }
+    }
+    public void CallTP()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        {
+            Teleport();
         }
     }
     public void Teleport()
@@ -241,11 +303,13 @@ public class PlayerMovement : MonoBehaviour
 
         }
     }
-    public void CallTP()
+    public void Dash()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        if (Input.GetKey("x"))
         {
-            Teleport();
+            SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Dash);
+            OnAttack();
         }
     }
+
 }

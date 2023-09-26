@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Platform
   - GameWall
+  - Enemy
   layers:
   - Default
   - TransparentFX
