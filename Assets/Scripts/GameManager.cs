@@ -16,11 +16,12 @@ public class GameManager : MonoBehaviour
     public float mainPlayerCurrentHp = 100;
     public float mainPlayerMaxPower = 50;
     public float mainPlayerCurrentPower = 0;
-    public bool IsAlive = true;
 
     // Enemy1 variables
     public float enemy1MaxHp = 50;
     public float enemy1CurrentHp = 50;
+
+    [SerializeField] private GameObject Player;
 
     // Start is called before the first frame update
     void Awake()
@@ -47,7 +48,17 @@ public class GameManager : MonoBehaviour
 
     public void PlayerDamage(float damage)
     {
-        mainPlayerCurrentHp -= damage;
+        if (mainPlayerCurrentHp - damage > 0)
+        {
+            mainPlayerCurrentHp -= damage;
+        }
+        else
+        {
+            mainPlayerCurrentHp = 0;
+            Player.GetComponent<PlayerMovement>().Die();
+
+        }
+        
         OnPlayerDamage.Invoke(mainPlayerCurrentHp);
     }
     public void PlayerPower(float power)

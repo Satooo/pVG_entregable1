@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform rayCastPoint;
     public Tilemap platforms;
     public bool CanTP;
-
+    public GameObject canvas;
 
     // Initialized on Start()
     private Rigidbody2D rb;
@@ -55,8 +55,12 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
+        
     }
-
+    private void Awake()
+    {
+        canvas = GameObject.Find("Canvas");
+    }
     // Update is called once per frame
     private void Update()
     {
@@ -66,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
             FlipSprite();
             CallTP();
             Dash();
-            CheckHP();
+            //CheckHP();
             CheckPower();
             if (isInTheAir)
             {
@@ -198,19 +202,6 @@ public class PlayerMovement : MonoBehaviour
         {
             Die();
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         if (other.transform.CompareTag("Platform"))
@@ -493,6 +484,8 @@ public class PlayerMovement : MonoBehaviour
         animator.SetTrigger("Death");
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
         SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Death);
+        StartCoroutine(passiveMe(0.5f));
+        
     }
     public void CheckHP() {
         if (GameManager.Instance.mainPlayerCurrentHp == 0)
@@ -506,5 +499,12 @@ public class PlayerMovement : MonoBehaviour
         {
             CanTP = true;
         }
+    }
+    
+
+IEnumerator passiveMe(float secs)
+    {
+        yield return new WaitForSeconds(secs);
+        canvas.transform.GetChild(2).gameObject.SetActive(true);
     }
 }
