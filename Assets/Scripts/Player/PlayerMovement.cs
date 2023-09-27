@@ -445,8 +445,14 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
-            Teleport();
+            if (CanTP == true)
+            {
+                animator.SetBool("TP", true);
+                Invoke("Teleport", 0.2f);
+            }
+
         }
+
     }
     public void Teleport()
     {
@@ -457,16 +463,16 @@ public class PlayerMovement : MonoBehaviour
                 transform.position = new Vector3(transform.position.x + TpLength, transform.position.y, transform.position.z);
                 GameManager.Instance.mainPlayerCurrentPower = 0;
                 CanTP = false;
-
-
             }
             else if (transform.localScale.x == -1)
             {
                 transform.position = new Vector3(transform.position.x - TpLength, transform.position.y, transform.position.z);
+                animator.SetTrigger("TP");
                 GameManager.Instance.mainPlayerCurrentPower = 0;
                 CanTP = false;
 
             }
+            animator.SetBool("TP", false);
             Collider2D hit = Physics2D.OverlapPoint(this.transform.position, LayerMask.GetMask("Ground"));
             if (hit != null)
             {
@@ -477,7 +483,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("No se puede realizar Teleport");
         }
-       
+
     }
     public void Dash()
     {
