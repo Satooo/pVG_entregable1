@@ -36,6 +36,14 @@ public class FireBallController : MonoBehaviour
             ExplosionCreation();
             Destroy(gameObject);
         }
+        if (collision.CompareTag("Boss"))
+        {
+            var enemy = collision.GetComponent<Boss>();
+            enemy.SubstractDamage();
+            GameManager.Instance.mainPlayerCurrentPower += 10f;
+            ExplosionCreation();
+            Destroy(gameObject);
+        }
         else if (collision.CompareTag("Platform"))
         {
             ExplosionCreation();

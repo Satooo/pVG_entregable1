@@ -6,14 +6,40 @@ public class Boss : MonoBehaviour
 {
     public float damage = 10f;
     public float EnemyHp = 40f;
-    
+    public static Boss Instance { get; private set; }
+
     private void Start() {
-        EnemyHp = 4f;
+        EnemyHp = 100f;
         GameManager.Instance.AddObserverMainPlayer(PlayerDamage);
+        
+    }
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            // Ya hay un GameManager
+        }
     }
     private void Update()
     {
         DieWatcher();
+        if (EnemyHp <= 60)
+        {
+            damage = 20f;
+        }
+        else if (EnemyHp <= 40)
+        {
+            damage = 30f;
+        }
+        else if (EnemyHp <= 20)
+        {
+            damage = 40f;
+        }
+
     }
     private void PlayerDamage(float playerCurrentHp)
     {
@@ -30,4 +56,9 @@ public class Boss : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        
+    }
+
 }
