@@ -43,7 +43,6 @@ public class PlayerMovement : MonoBehaviour
     private bool isInTheAir = true;
     private bool isWallJumping = false;
     private bool isAttacking = false;
-    private bool isFallingIdle = false;
     private bool canTP = false;
 
 
@@ -73,6 +72,7 @@ public class PlayerMovement : MonoBehaviour
             // Player can only jump if is touching any ColliderLayerMask
             if (capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Ground")))
             {
+                Debug.Log("IS TOUCHING GROUND TO JUMP");
                 // change animation idle/running->IsJumping
                 animator.SetBool("IsJumping", true);
                 // push to jump
@@ -81,6 +81,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Wall")))
             {
+                Debug.Log("IS WALL GROUND TO JUMP");
                 // Change animation jumping->IsWallJumping
                 animator.SetBool("IsWallJumping", true);
                 // push to jump
@@ -156,12 +157,8 @@ public class PlayerMovement : MonoBehaviour
                 // Player is falling idle
                 else if (rb.velocity.y < Mathf.Epsilon)
                 {
-                    if (isFallingIdle == false)
-                    {
-                        animator.SetBool("IsJumping", false);
-                        animator.SetBool("IsFallingIdle", true);
-                        isFallingIdle = true;
-                    }
+                    animator.SetBool("IsJumping", false);
+                    animator.SetBool("IsFallingIdle", true);
                 }
             }
 
@@ -233,11 +230,12 @@ public class PlayerMovement : MonoBehaviour
         {
             foreach (ContactPoint2D contact in other.contacts)
             {
-                //Debug.Log("HAHAHAHAHAHAHAHAHAHA" + contact);
+                Debug.Log("CHOCO CON:"+contact.point.y);
                 // Check if the collision point is below the player's center (feet).
                 // Only Y axis is checked
                 if (contact.point.y < transform.position.y)
                 {
+                    Debug.Log("CHOCO CON LOS PIES :)");
                     // End jumping animation
                     animator.SetBool("IsJumping", false);
                     animator.SetBool("IsFalling", false);
@@ -246,7 +244,9 @@ public class PlayerMovement : MonoBehaviour
                     rb.gravityScale = 1f;
 
                     isInTheAir = false;
-                    isFallingIdle = false;
+                }
+                else{
+                    Debug.Log("CHOCO CON LA CABEZA :)");
                 }
                 // ELSE: Collision with any other part that is not the bottom of Y
             }
@@ -257,7 +257,6 @@ public class PlayerMovement : MonoBehaviour
             isTouchingWall = true;
 
             isInTheAir = false;
-            isFallingIdle = false;
             if (other.transform.name == "BottomWall")
             {
                 Die();
@@ -320,14 +319,14 @@ public class PlayerMovement : MonoBehaviour
             );
         }
     }
-    public void CallTP()
+    public  void CallTP()
     {
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
             Teleport();
         }
     }
-    public void Teleport()
+    public  void Teleport()
     {
         if (transform.localScale.x == 1)
         {
@@ -357,7 +356,7 @@ public class PlayerMovement : MonoBehaviour
             OnAttack();
         }
     }
- 
+
     public void Die()
     {
         animator.SetTrigger("Death");
