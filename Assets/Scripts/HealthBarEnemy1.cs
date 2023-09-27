@@ -21,7 +21,6 @@ public class HealthBarEnemy1 : MonoBehaviour
 
     private void ReduceHealth(float enemy1CurrentHp) 
     {
-        Debug.Log("LA BARRA SE BAJARA");
         slider.value = enemy1CurrentHp;
     }
 }
