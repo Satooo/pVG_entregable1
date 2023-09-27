@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 
 public class PlayerMovement : MonoBehaviour
@@ -14,9 +15,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float runSpeed = 4f;
     [SerializeField] private float jumpSpeed = 12f;
     [SerializeField] private float fallSpeed = 2f;
-    [Header("Timer")][SerializeField] private float wallTimerSlip = 1f;
-    [Header("Teleport")][SerializeField] private float TpLength = 5;
-
+    [Header("Timer")] [SerializeField] private float wallTimerSlip = 1f;
+    [Header("Teleport")]
+    [SerializeField] private float TpLength = 5;
+    [SerializeField] private float rayDistance;
+    private Vector2 direction = Vector2.right;
+    [SerializeField] private Transform rayCastPoint;
+    public Tilemap platforms;
 
 
     // Initialized on Start()
@@ -48,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
+        rayDistance = 0.7f;
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
@@ -107,6 +113,27 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!GameManager.Instance.pause)
         {
+            //SetRayCastPos();
+            RaycastHit2D hit = Physics2D.Raycast(
+            rayCastPoint.position,
+            direction,
+            rayDistance
+        );
+
+            Debug.DrawRay(
+                rayCastPoint.position,
+                transform.right * rayDistance,
+                Color.red
+            );
+            if (hit)
+            {
+                //Debug.Log(hit.collider.transform.name);
+                if (hit.collider.transform.CompareTag("Platform"))
+                {
+                    //Debug.Log("MORIR");
+                }
+
+            }
             Run();
             FlipSprite();
             CallTP();
@@ -199,7 +226,7 @@ public class PlayerMovement : MonoBehaviour
         {
             foreach (ContactPoint2D contact in other.contacts)
             {
-                Debug.Log("HAHAHAHAHAHAHAHAHAHA"+ contact);
+                Debug.Log("HAHAHAHAHAHAHAHAHAHA" + contact);
                 // Check if the collision point is below the player's center (feet).
                 // Only Y axis is checked
                 if (contact.point.y < transform.position.y)
@@ -311,5 +338,8 @@ public class PlayerMovement : MonoBehaviour
             OnAttack();
         }
     }
-
+    public void SetRayCastPos()
+    {
+        this.transform.GetChild(2).transform.position = this.transform.position;
+    }
 }
