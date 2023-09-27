@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class MenuPausa : MonoBehaviour
 {
+    public static MenuPausa Instance { get; private set; }
     [SerializeField] private GameObject botonPausa;
     [SerializeField] private GameObject menuPausa;
     private bool juegoPausado=false;
@@ -21,6 +22,17 @@ public class MenuPausa : MonoBehaviour
                 Pausa();
             }
 
+        }
+    }
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.Log("Ya hay un Menu");
         }
     }
     public void Pausa()

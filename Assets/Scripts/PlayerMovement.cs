@@ -19,9 +19,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("Teleport")]
     [SerializeField] private float TpLength = 5;
     [SerializeField] private float rayDistance;
-    private Vector2 direction = Vector2.right;
+    private Vector2 direction;
     [SerializeField] private Transform rayCastPoint;
     public Tilemap platforms;
+    private bool CanDie;
 
 
     // Initialized on Start()
@@ -53,7 +54,6 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        rayDistance = 0.7f;
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
@@ -111,6 +111,7 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        direction = new Vector2(transform.localScale.x, 0);
         if (!GameManager.Instance.pause)
         {
             //SetRayCastPos();
@@ -122,7 +123,7 @@ public class PlayerMovement : MonoBehaviour
 
             Debug.DrawRay(
                 rayCastPoint.position,
-                transform.right * rayDistance,
+                direction * rayDistance,
                 Color.red
             );
             if (hit)
@@ -131,6 +132,12 @@ public class PlayerMovement : MonoBehaviour
                 if (hit.collider.transform.CompareTag("Platform"))
                 {
                     //Debug.Log("MORIR");
+                    CanDie = true;
+
+                }
+                else
+                {
+                    CanDie = false;
                 }
 
             }
@@ -160,7 +167,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (isTouchingWall)
             {
-                Debug.Log(wallTimer);
+                //Debug.Log(wallTimer);
                 wallTimer -= Time.deltaTime;
                 if (wallTimer > 0)
                 {
@@ -226,7 +233,7 @@ public class PlayerMovement : MonoBehaviour
         {
             foreach (ContactPoint2D contact in other.contacts)
             {
-                Debug.Log("HAHAHAHAHAHAHAHAHAHA" + contact);
+                //Debug.Log("HAHAHAHAHAHAHAHAHAHA" + contact);
                 // Check if the collision point is below the player's center (feet).
                 // Only Y axis is checked
                 if (contact.point.y < transform.position.y)
@@ -251,6 +258,10 @@ public class PlayerMovement : MonoBehaviour
 
             isInTheAir = false;
             isFallingIdle = false;
+            if (other.transform.name == "BottomWall")
+            {
+                Die();
+            }
         }
     }
 
@@ -258,7 +269,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.transform.CompareTag("GameWall"))
         {
-            Debug.Log("SE SEPARO");
+            //Debug.Log("SE SEPARO");
             // The player has stopped touching the GameWall
             isTouchingWall = false;
             isInTheAir = true;
@@ -329,7 +340,15 @@ public class PlayerMovement : MonoBehaviour
             transform.position = new Vector3(transform.position.x - TpLength, transform.position.y, transform.position.z);
 
         }
+        Collider2D hit = Physics2D.OverlapPoint(this.transform.position,LayerMask.GetMask("Ground"));
+        if (hit != null)
+        {
+            Debug.Log("DEBE MORIR");
+            Die();
+        }
     }
+    
+
     public void Dash()
     {
         if (Input.GetKey("x"))
@@ -338,8 +357,10 @@ public class PlayerMovement : MonoBehaviour
             OnAttack();
         }
     }
-    public void SetRayCastPos()
+ 
+    public void Die()
     {
-        this.transform.GetChild(2).transform.position = this.transform.position;
+        animator.SetTrigger("Death");
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
     }
 }
