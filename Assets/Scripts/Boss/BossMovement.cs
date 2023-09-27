@@ -10,8 +10,10 @@ public class BossMovement : MonoBehaviour
     public bool isChasing = false;
     public float chaseDistance = 10f;
     public float moveSpeed = 2f;
+    private Animator animator;
     private void Start()
     {
+        animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         myBoxCollider = GetComponent<BoxCollider2D>();
     }
@@ -24,6 +26,7 @@ public class BossMovement : MonoBehaviour
         {
             
         }
+        ChasinfBoll();
         if(isChasing){
             if(transform.position.x > playerTransform.position.x){
                 transform.localScale = new Vector3(-1,1,1);
@@ -33,23 +36,30 @@ public class BossMovement : MonoBehaviour
                 transform.position += Vector3.right*moveSpeed*Time.deltaTime;
             }
         }else{
-            transform.position += Vector3.right * 0 * Time.deltaTime;
-        
-        if (Vector2.Distance(transform.position, playerTransform.position)<chaseDistance){
-                isChasing = true;
-            }else{
-
-                isChasing = false;
-            }
+            //transform.position += Vector3.right * 0 * Time.deltaTime;
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
-{
-    if (collision.CompareTag("Platform") || collision.CompareTag("GameWall"))
     {
-        // Cambia la dirección horizontal del boss al chocar con una plataforma o pared.
-        transform.localScale = new Vector2(-transform.localScale.x, transform.localScale.y);
+        if (collision.CompareTag("Platform") || collision.CompareTag("GameWall"))
+        {
+            // Cambia la dirección horizontal del boss al chocar con una plataforma o pared.
+            transform.localScale = new Vector2(-transform.localScale.x, transform.localScale.y);
+        }
     }
-}
+    private void ChasinfBoll()
+    {
+        if (Vector2.Distance(transform.position, playerTransform.position) < chaseDistance)
+        {
+            isChasing = true;
+            animator.SetBool("IsRunning", true);
+        }
+        else
+        {
+
+            isChasing = false;
+            animator.SetBool("IsRunning", false);
+        }
+    }
 
 }

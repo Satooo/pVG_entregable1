@@ -204,7 +204,15 @@ public class PlayerMovement : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D other)
     {
 
+        if (other.transform.CompareTag("Boss"))
+        {
+            // Obtener la dirección desde el jugador al jefe
+            Vector2 directionToBoss = (other.transform.position - transform.position).normalized;
 
+            // Aplicar una fuerza constante en la dirección desde el jugador al jefe
+            rb.velocity = Vector2.zero; // Detiene cualquier velocidad anterior
+            rb.AddForce(directionToBoss * 10f, ForceMode2D.Impulse); // Ajusta la fuerza según tus necesidades
+        }
         if (other.transform.name == "BottomWall")
         {
             Die();

@@ -29,15 +29,15 @@ public class Boss : MonoBehaviour
         DieWatcher();
         if (EnemyHp <= 60)
         {
-            damage = 20f;
+            damage = 15f;
         }
         else if (EnemyHp <= 40)
         {
-            damage = 30f;
+            damage = 20f;
         }
         else if (EnemyHp <= 20)
         {
-            damage = 40f;
+            damage = 25f;
         }
 
     }
