@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 
 public class PlayerMovement : MonoBehaviour
@@ -14,9 +15,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float runSpeed = 4f;
     [SerializeField] private float jumpSpeed = 12f;
     [SerializeField] private float fallSpeed = 2f;
-    [Header("Timer")][SerializeField] private float wallTimerSlip = 1f;
-    [Header("Teleport")][SerializeField] private float TpLength = 5;
-
+    [Header("Timer")] [SerializeField] private float wallTimerSlip = 1f;
+    [Header("Teleport")]
+    [SerializeField] private float TpLength = 5;
+    [SerializeField] private float rayDistance;
+    private Vector2 direction;
+    [SerializeField] private Transform rayCastPoint;
+    public Tilemap platforms;
+    private bool CanDie;
 
 
     // Initialized on Start()
@@ -106,8 +112,36 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        direction = new Vector2(transform.localScale.x, 0);
         if (!GameManager.Instance.pause)
         {
+            //SetRayCastPos();
+            RaycastHit2D hit = Physics2D.Raycast(
+            rayCastPoint.position,
+            direction,
+            rayDistance
+        );
+
+            Debug.DrawRay(
+                rayCastPoint.position,
+                direction * rayDistance,
+                Color.red
+            );
+            if (hit)
+            {
+                //Debug.Log(hit.collider.transform.name);
+                if (hit.collider.transform.CompareTag("Platform"))
+                {
+                    //Debug.Log("MORIR");
+                    CanDie = true;
+
+                }
+                else
+                {
+                    CanDie = false;
+                }
+
+            }
             Run();
             FlipSprite();
             CallTP();
@@ -130,7 +164,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (isTouchingWall)
             {
-                Debug.Log(wallTimer);
+                //Debug.Log(wallTimer);
                 wallTimer -= Time.deltaTime;
                 if (wallTimer > 0)
                 {
@@ -223,6 +257,10 @@ public class PlayerMovement : MonoBehaviour
             isTouchingWall = true;
 
             isInTheAir = false;
+            if (other.transform.name == "BottomWall")
+            {
+                Die();
+            }
         }
     }
 
@@ -230,7 +268,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.transform.CompareTag("GameWall"))
         {
-            Debug.Log("SE SEPARO");
+            //Debug.Log("SE SEPARO");
             // The player has stopped touching the GameWall
             isTouchingWall = false;
             isInTheAir = true;
@@ -301,8 +339,16 @@ public class PlayerMovement : MonoBehaviour
             transform.position = new Vector3(transform.position.x - TpLength, transform.position.y, transform.position.z);
 
         }
+        Collider2D hit = Physics2D.OverlapPoint(this.transform.position,LayerMask.GetMask("Ground"));
+        if (hit != null)
+        {
+            Debug.Log("DEBE MORIR");
+            Die();
+        }
     }
-    public  void Dash()
+    
+
+    public void Dash()
     {
         if (Input.GetKey("x"))
         {
@@ -311,4 +357,9 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void Die()
+    {
+        animator.SetTrigger("Death");
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+    }
 }
