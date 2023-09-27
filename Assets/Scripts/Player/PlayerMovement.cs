@@ -14,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Speeds")]
     [SerializeField] private float runSpeed = 4f;
     [SerializeField] private float jumpSpeed = 12f;
-    [SerializeField] private float fallSpeed = 2f;
+    [SerializeField] private float fallSpeed = 0.4f;
     [Header("Timer")][SerializeField] private float wallTimerSlip = 1f;
     [Header("Teleport")]
     [SerializeField] private float TpLength = 5;
@@ -40,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isTouchingWall = false;
     private bool isInTheAir = true;
     private bool isWallJumping = false;
-    private bool isOnTopOfWall = true;
+    private bool isOnTopOfWall = false;
     private bool isAttacking = false;
 
 
@@ -77,26 +77,28 @@ public class PlayerMovement : MonoBehaviour
                 // Player reaches highest place during jump
                 if (Mathf.Abs(rb.velocity.y) < Mathf.Epsilon)
                 {
-                    rb.gravityScale *= 2f;
+                    rb.gravityScale = 2f;
+                    animator.SetBool("IsFallingIdle", true);
                 }
                 // Player is falling idle
-                else if (rb.velocity.y < Mathf.Epsilon)
+                /* else if (rb.velocity.y < Mathf.Epsilon)
                 {
                     animator.SetBool("IsJumping", false);
                     animator.SetBool("IsFallingIdle", true);
-                }
+                } */
+            }else{
+                animator.SetBool("IsFallingIdle", false);
             }
 
             if (isTouchingWall)
             {
-                wallTimer -= Time.deltaTime;
+                Debug.Log("touchingwall");
+                 wallTimer -= Time.deltaTime;
                 if (wallTimer > 0)
                 {
-                    rb.gravityScale = 2f;
+                    rb.gravityScale = fallSpeed;
                     animator.SetBool("IsFalling", true);
-                }
-                else
-                {
+                }else{
                     rb.gravityScale = 2f;
                     animator.SetBool("IsFalling", false);
                     animator.SetBool("IsFallingIdle", true);
@@ -106,7 +108,10 @@ public class PlayerMovement : MonoBehaviour
 
             if (isWallJumping && !isOnTopOfWall)
             {
+               
+                Debug.Log(isWallJumping);
                 wallJumpTimer -= Time.deltaTime;
+                 Debug.Log(wallJumpTimer);
                 if (wallJumpTimer >= 0)
                 {
                     if (isMovingRight)
@@ -168,9 +173,11 @@ public class PlayerMovement : MonoBehaviour
             else if (capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Wall")))
             {
                 animator.SetBool("IsWallJumping", true);
-                rb.velocity += new Vector2(0, jumpSpeed / 2);
+                animator.SetBool("IsFalling", false);
+
+                rb.velocity += new Vector2(1f, jumpSpeed / 2);
                 isWallJumping = true;
-                wallJumpTimer = 0.5f;
+                wallJumpTimer = 0.8f;
                 isInTheAir = true;
                 SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Jump);
             }
@@ -266,9 +273,10 @@ public class PlayerMovement : MonoBehaviour
                 if (contact.point.y < transform.position.y || contact.point.y > transform.position.y)
                 {
                     Debug.Log("TOCANDO VERTICAL");
-                    isTouchingWall = false;
-                    isOnTopOfWall = true;
+                    isTouchingWall = true;
+                    //isOnTopOfWall = true;
                     isInTheAir = false;
+                    wallTimer=0.8f;
                 }
                 else
                 {
