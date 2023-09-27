@@ -25,7 +25,7 @@ public class Enemy : MonoBehaviour
     }
     private void DieWatcher()
     {
-        if (EnemyHp == 0)
+        if (EnemyHp <= 0)
         {
             Destroy(this.gameObject);
         }

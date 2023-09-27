@@ -8,7 +8,7 @@ public class BossMovement : MonoBehaviour
     private Rigidbody2D rb;
     private BoxCollider2D myBoxCollider;
     public bool isChasing = false;
-    public float chaseDistance = 20f;
+    public float chaseDistance = 10f;
     public float moveSpeed = 2f;
     private void Start()
     {
@@ -22,7 +22,7 @@ public class BossMovement : MonoBehaviour
         }
         if (Boss.Instance.EnemyHp <= 80)
         {
-            chaseDistance = 30f;
+            
         }
         if(isChasing){
             if(transform.position.x > playerTransform.position.x){
@@ -33,22 +33,23 @@ public class BossMovement : MonoBehaviour
                 transform.position += Vector3.right*moveSpeed*Time.deltaTime;
             }
         }else{
-            if(Vector2.Distance(transform.position, playerTransform.position)<chaseDistance){
+            transform.position += Vector3.right * 0 * Time.deltaTime;
+        
+        if (Vector2.Distance(transform.position, playerTransform.position)<chaseDistance){
                 isChasing = true;
             }else{
+
                 isChasing = false;
             }
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
+{
+    if (collision.CompareTag("Platform") || collision.CompareTag("GameWall"))
     {
-        if (collision.CompareTag("Platform"))
-        {
-            transform.localScale = new Vector2(-Mathf.Sign(rb.velocity.x), transform.localScale.y);
-        }
-        else if (collision.CompareTag("GameWall"))
-        {
-            transform.localScale = new Vector2(-Mathf.Sign(rb.velocity.x), transform.localScale.y);
-        }
+        // Cambia la dirección horizontal del boss al chocar con una plataforma o pared.
+        transform.localScale = new Vector2(-transform.localScale.x, transform.localScale.y);
     }
+}
+
 }
