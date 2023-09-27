@@ -18,7 +18,6 @@ public class LogoScript : MonoBehaviour
     {
         if(finishedLoading==false){
             initialTime-=Time.deltaTime;
-            Debug.Log(initialTime);
         }
         
         if(initialTime<0){

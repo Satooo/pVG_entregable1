@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Platform
   - GameWall
+  - Enemy
+  - Boss
   layers:
   - Default
   - TransparentFX
@@ -14,10 +16,10 @@ TagManager:
   - Water
   - UI
   - Ground
-  - 
-  - 
-  - 
-  - 
+  - Fireball
+  - Player
+  - Water
+  - FinalBoss
   - 
   - 
   - 
@@ -42,6 +44,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: UI
+    uniqueID: 2775579319
     locked: 0
   - name: Background
     uniqueID: 2250490533

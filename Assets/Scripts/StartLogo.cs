@@ -16,7 +16,7 @@ public class StartLogo : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(finishedLoading=false){
+        if(finishedLoading==false){
             initialTime-=Time.deltaTime;
         }
         

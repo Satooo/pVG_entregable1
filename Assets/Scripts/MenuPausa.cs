@@ -46,7 +46,6 @@ public class MenuPausa : MonoBehaviour
     }
     public void Cerrar()
     {
-        Debug.Log("Se cerró el juego");
         Application.Quit();
     }
 }
