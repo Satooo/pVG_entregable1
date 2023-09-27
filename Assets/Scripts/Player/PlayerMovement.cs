@@ -14,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Speeds")]
     [SerializeField] private float runSpeed = 4f;
     [SerializeField] private float jumpSpeed = 12f;
-    [SerializeField] private float fallSpeed = 2f;
+    [SerializeField] private float fallSpeed = 0.4f;
     [Header("Timer")][SerializeField] private float wallTimerSlip = 1f;
     [Header("Teleport")]
     [SerializeField] private float TpLength = 5;
@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform rayCastPoint;
     public Tilemap platforms;
     public bool CanTP;
-
+    public GameObject canvas;
 
     // Initialized on Start()
     private Rigidbody2D rb;
@@ -40,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isTouchingWall = false;
     private bool isInTheAir = true;
     private bool isWallJumping = false;
-    private bool isOnTopOfWall = true;
+    private bool isOnTopOfWall = false;
     private bool isAttacking = false;
 
 
@@ -55,8 +55,12 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
+        
     }
-
+    private void Awake()
+    {
+        canvas = GameObject.Find("Canvas");
+    }
     // Update is called once per frame
     private void Update()
     {
@@ -66,33 +70,35 @@ public class PlayerMovement : MonoBehaviour
             FlipSprite();
             CallTP();
             Dash();
-            CheckHP();
+            //CheckHP();
             CheckPower();
             if (isInTheAir)
             {
                 // Player reaches highest place during jump
                 if (Mathf.Abs(rb.velocity.y) < Mathf.Epsilon)
                 {
-                    rb.gravityScale *= 2f;
+                    rb.gravityScale = 2f;
+                    animator.SetBool("IsFallingIdle", true);
                 }
                 // Player is falling idle
-                else if (rb.velocity.y < Mathf.Epsilon)
+                /* else if (rb.velocity.y < Mathf.Epsilon)
                 {
                     animator.SetBool("IsJumping", false);
                     animator.SetBool("IsFallingIdle", true);
-                }
+                } */
+            }else{
+                animator.SetBool("IsFallingIdle", false);
             }
 
             if (isTouchingWall)
             {
-                wallTimer -= Time.deltaTime;
+                Debug.Log("touchingwall");
+                 wallTimer -= Time.deltaTime;
                 if (wallTimer > 0)
                 {
-                    rb.gravityScale = 2f;
+                    rb.gravityScale = fallSpeed;
                     animator.SetBool("IsFalling", true);
-                }
-                else
-                {
+                }else{
                     rb.gravityScale = 2f;
                     animator.SetBool("IsFalling", false);
                     animator.SetBool("IsFallingIdle", true);
@@ -102,7 +108,10 @@ public class PlayerMovement : MonoBehaviour
 
             if (isWallJumping && !isOnTopOfWall)
             {
+               
+                Debug.Log(isWallJumping);
                 wallJumpTimer -= Time.deltaTime;
+                 Debug.Log(wallJumpTimer);
                 if (wallJumpTimer >= 0)
                 {
                     if (isMovingRight)
@@ -164,9 +173,11 @@ public class PlayerMovement : MonoBehaviour
             else if (capsuleCollider.IsTouchingLayers(LayerMask.GetMask("Wall")))
             {
                 animator.SetBool("IsWallJumping", true);
-                rb.velocity += new Vector2(0, jumpSpeed / 2);
+                animator.SetBool("IsFalling", false);
+
+                rb.velocity += new Vector2(1f, jumpSpeed / 2);
                 isWallJumping = true;
-                wallJumpTimer = 0.5f;
+                wallJumpTimer = 0.8f;
                 isInTheAir = true;
                 SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Jump);
             }
@@ -198,19 +209,6 @@ public class PlayerMovement : MonoBehaviour
         {
             Die();
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         if (other.transform.CompareTag("Platform"))
@@ -275,9 +273,10 @@ public class PlayerMovement : MonoBehaviour
                 if (contact.point.y < transform.position.y || contact.point.y > transform.position.y)
                 {
                     Debug.Log("TOCANDO VERTICAL");
-                    isTouchingWall = false;
-                    isOnTopOfWall = true;
+                    isTouchingWall = true;
+                    //isOnTopOfWall = true;
                     isInTheAir = false;
+                    wallTimer=0.8f;
                 }
                 else
                 {
@@ -446,8 +445,14 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
-            Teleport();
+            if (CanTP == true)
+            {
+                animator.SetBool("TP", true);
+                Invoke("Teleport", 0.2f);
+            }
+
         }
+
     }
     public void Teleport()
     {
@@ -458,16 +463,16 @@ public class PlayerMovement : MonoBehaviour
                 transform.position = new Vector3(transform.position.x + TpLength, transform.position.y, transform.position.z);
                 GameManager.Instance.mainPlayerCurrentPower = 0;
                 CanTP = false;
-
-
             }
             else if (transform.localScale.x == -1)
             {
                 transform.position = new Vector3(transform.position.x - TpLength, transform.position.y, transform.position.z);
+                animator.SetTrigger("TP");
                 GameManager.Instance.mainPlayerCurrentPower = 0;
                 CanTP = false;
 
             }
+            animator.SetBool("TP", false);
             Collider2D hit = Physics2D.OverlapPoint(this.transform.position, LayerMask.GetMask("Ground"));
             if (hit != null)
             {
@@ -478,7 +483,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("No se puede realizar Teleport");
         }
-       
+
     }
     public void Dash()
     {
@@ -493,6 +498,8 @@ public class PlayerMovement : MonoBehaviour
         animator.SetTrigger("Death");
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
         SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Death);
+        StartCoroutine(passiveMe(0.5f));
+        
     }
     public void CheckHP() {
         if (GameManager.Instance.mainPlayerCurrentHp == 0)
@@ -506,5 +513,12 @@ public class PlayerMovement : MonoBehaviour
         {
             CanTP = true;
         }
+    }
+    
+
+IEnumerator passiveMe(float secs)
+    {
+        yield return new WaitForSeconds(secs);
+        canvas.transform.GetChild(2).gameObject.SetActive(true);
     }
 }
