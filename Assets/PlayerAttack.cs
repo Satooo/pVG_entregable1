@@ -19,6 +19,11 @@ public class PlayerAttack : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1))
         {
+            var soundEffect = Random.Range(0f, 101.0f);
+            if (soundEffect <= 10)
+            {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundType.fire);
+            }
             Fire();
         }
     }
@@ -34,5 +39,6 @@ public class PlayerAttack : MonoBehaviour
             Instantiate(Fireball, FirePositionIzq.position, FirePositionIzq.rotation);
 
         }
+        
     }
 }
