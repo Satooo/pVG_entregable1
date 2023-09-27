@@ -32,13 +32,17 @@ public class FireBallController : MonoBehaviour
         {
             var enemy = collision.GetComponent<Enemy>();
             enemy.SubstractDamage();
-            Instantiate(Explosion, transform.position, Quaternion.identity);
+            ExplosionCreation();
             Destroy(gameObject);
         }
         else if (collision.CompareTag("Platform"))
         {
-            Instantiate(Explosion, transform.position, Quaternion.identity);
+            ExplosionCreation();
             Destroy(gameObject);
         }
+    }
+    public void ExplosionCreation()
+    {
+        GameObject jose = Instantiate(Explosion, transform.position, Quaternion.identity);
     }
 }

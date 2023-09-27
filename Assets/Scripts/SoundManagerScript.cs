@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class SoundManagerScript : MonoBehaviour
 {
-    private static AudioClip playerJump, playerDash;
+    private static AudioClip playerJump, playerDash, PlayerFire;
     private static AudioSource audioSrc;
     public enum SoundType
     {
         Jump,
-        Dash
+        Dash,
+        fire
     }
 
     
@@ -20,6 +21,7 @@ public class SoundManagerScript : MonoBehaviour
         // ShortAudios
         playerDash = Resources.Load<AudioClip>("whoosh");
         playerJump = Resources.Load<AudioClip>("jump");
+        PlayerFire = Resources.Load<AudioClip>("Fire");
         // AudioSource
         audioSrc = GetComponent<AudioSource>();
     }
@@ -38,6 +40,9 @@ public class SoundManagerScript : MonoBehaviour
                 break;
             case SoundType.Dash:
                 audioSrc.PlayOneShot(playerDash);
+                break;
+            case SoundType.fire:
+                audioSrc.PlayOneShot(PlayerFire);
                 break;
         }
         
