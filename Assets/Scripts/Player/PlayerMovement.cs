@@ -206,12 +206,18 @@ public class PlayerMovement : MonoBehaviour
 
         if (other.transform.CompareTag("Boss"))
         {
-            // Obtener la dirección desde el jugador al jefe
-            Vector2 directionToBoss = (other.transform.position - transform.position).normalized;
+            // Obtener la dirección desde el jugador al jefe solo en el eje X
+        Vector2 directionToBoss = other.transform.position - transform.position;
+        Debug.Log("directionToBoss");
+        Debug.Log(directionToBoss);
+        directionToBoss.y = 0; // Establecer la componente Y a cero para no afectar el eje vertical.
 
-            // Aplicar una fuerza constante en la dirección desde el jugador al jefe
-            rb.velocity = Vector2.zero; // Detiene cualquier velocidad anterior
-            rb.AddForce(directionToBoss * 10f, ForceMode2D.Impulse); // Ajusta la fuerza según tus necesidades
+        if(directionToBoss.x > Mathf.Epsilon){
+            transform.position = new Vector2(transform.position.x-1f, transform.position.y);
+        }else{
+            transform.position = new Vector2(transform.position.x+1f, transform.position.y);
+        }
+        
         }
         if (other.transform.name == "BottomWall")
         {
