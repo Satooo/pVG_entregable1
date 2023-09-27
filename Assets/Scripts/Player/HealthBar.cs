@@ -23,4 +23,5 @@ public class HealthBar : MonoBehaviour
     {
         slider.value = playerCurrentHp;
     }
+   
 }

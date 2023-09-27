@@ -4,16 +4,18 @@ using UnityEngine;
 
 public class SoundManagerScript : MonoBehaviour
 {
-    private static AudioClip playerJump, playerDash, PlayerFire;
+    private static AudioClip playerJump, playerDash, PlayerFire, PlayerDeath;
     private static AudioSource audioSrc;
+    public static AudioSource BackMusic;
     public enum SoundType
     {
         Jump,
         Dash,
-        fire
+        fire,
+        Death
     }
-
     
+
     // MonoBehaviour class method
     // Start is called before the first frame update
     void Start()
@@ -22,6 +24,8 @@ public class SoundManagerScript : MonoBehaviour
         playerDash = Resources.Load<AudioClip>("whoosh");
         playerJump = Resources.Load<AudioClip>("jump");
         PlayerFire = Resources.Load<AudioClip>("Fire");
+        PlayerDeath = Resources.Load<AudioClip>("Fatality");
+        BackMusic = transform.GetChild(0).GetComponent<AudioSource>();
         // AudioSource
         audioSrc = GetComponent<AudioSource>();
     }
@@ -43,6 +47,11 @@ public class SoundManagerScript : MonoBehaviour
                 break;
             case SoundType.fire:
                 audioSrc.PlayOneShot(PlayerFire);
+                break;
+            case SoundType.Death:
+                audioSrc.volume = 1f;
+                audioSrc.PlayOneShot(PlayerDeath);
+                BackMusic.Stop();
                 break;
         }
         

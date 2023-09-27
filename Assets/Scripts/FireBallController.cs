@@ -32,6 +32,7 @@ public class FireBallController : MonoBehaviour
         {
             var enemy = collision.GetComponent<Enemy>();
             enemy.SubstractDamage();
+            GameManager.Instance.mainPlayerCurrentPower += 10f;
             ExplosionCreation();
             Destroy(gameObject);
         }

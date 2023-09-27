@@ -7,12 +7,16 @@ using UnityEngine.Events;
 public class GameManager : MonoBehaviour
 {
     public UnityAction<float> OnPlayerDamage;
+    public UnityAction<float> OnPlayerPower;
     public UnityAction<float> OnEnemy1Damage;
     public static GameManager Instance { get; private set; }
     public bool pause = false;
     // Main player variables
     public float mainPlayerMaxHp = 100;
     public float mainPlayerCurrentHp = 100;
+    public float mainPlayerMaxPower = 50;
+    public float mainPlayerCurrentPower = 0;
+    public bool IsAlive = true;
 
     // Enemy1 variables
     public float enemy1MaxHp = 50;
@@ -46,7 +50,11 @@ public class GameManager : MonoBehaviour
         mainPlayerCurrentHp -= damage;
         OnPlayerDamage.Invoke(mainPlayerCurrentHp);
     }
-
+    public void PlayerPower(float power)
+    {
+        mainPlayerCurrentPower -= power;
+        OnPlayerPower.Invoke(mainPlayerCurrentPower);
+    }
     public void EnemyDamage(float damage)
     {
         enemy1CurrentHp -= damage;
@@ -62,5 +70,8 @@ public class GameManager : MonoBehaviour
     {
         OnEnemy1Damage += action;
     }
-
+    public void AddObserverMainPlayerPower(UnityAction<float> action)
+    {
+        OnPlayerPower += action;
+    }
 }
