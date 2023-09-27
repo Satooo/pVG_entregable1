@@ -19,10 +19,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Teleport")]
     [SerializeField] private float TpLength = 5;
     [SerializeField] private float rayDistance;
-    private Vector2 direction;
     [SerializeField] private Transform rayCastPoint;
     public Tilemap platforms;
-    private bool CanDie;
+    public bool CanTP;
 
 
     // Initialized on Start()
@@ -61,39 +60,14 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        direction = new Vector2(transform.localScale.x, 0);
         if (!GameManager.Instance.pause)
         {
-            //SetRayCastPos();
-            RaycastHit2D hit = Physics2D.Raycast(
-            rayCastPoint.position,
-            direction,
-            rayDistance
-        );
-
-            Debug.DrawRay(
-                rayCastPoint.position,
-                direction * rayDistance,
-                Color.red
-            );
-            if (hit)
-            {
-                if (hit.collider.transform.CompareTag("Platform"))
-                {
-                    CanDie = true;
-
-                }
-                else
-                {
-                    CanDie = false;
-                }
-
-            }
             Run();
             FlipSprite();
             CallTP();
             Dash();
-
+            CheckHP();
+            CheckPower();
             if (isInTheAir)
             {
                 // Player reaches highest place during jump
@@ -220,7 +194,10 @@ public class PlayerMovement : MonoBehaviour
     {
 
 
-
+        if (other.transform.name == "BottomWall")
+        {
+            Die();
+        }
 
 
 
@@ -474,22 +451,34 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Teleport()
     {
-        if (transform.localScale.x == 1)
+        if (CanTP == true)
         {
-            transform.position = new Vector3(transform.position.x + TpLength, transform.position.y, transform.position.z);
+            if (transform.localScale.x == 1)
+            {
+                transform.position = new Vector3(transform.position.x + TpLength, transform.position.y, transform.position.z);
+                GameManager.Instance.mainPlayerCurrentPower = 0;
+                CanTP = false;
 
 
-        }
-        else if (transform.localScale.x == -1)
-        {
-            transform.position = new Vector3(transform.position.x - TpLength, transform.position.y, transform.position.z);
+            }
+            else if (transform.localScale.x == -1)
+            {
+                transform.position = new Vector3(transform.position.x - TpLength, transform.position.y, transform.position.z);
+                GameManager.Instance.mainPlayerCurrentPower = 0;
+                CanTP = false;
 
+            }
+            Collider2D hit = Physics2D.OverlapPoint(this.transform.position, LayerMask.GetMask("Ground"));
+            if (hit != null)
+            {
+                Die();
+            }
         }
-        Collider2D hit = Physics2D.OverlapPoint(this.transform.position, LayerMask.GetMask("Ground"));
-        if (hit != null)
+        else
         {
-            Die();
+            Debug.Log("No se puede realizar Teleport");
         }
+       
     }
     public void Dash()
     {
@@ -503,5 +492,19 @@ public class PlayerMovement : MonoBehaviour
     {
         animator.SetTrigger("Death");
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
+        SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Death);
+    }
+    public void CheckHP() {
+        if (GameManager.Instance.mainPlayerCurrentHp == 0)
+        {
+            Die();
+        }
+    }
+    public void CheckPower()
+    {
+        if (GameManager.Instance.mainPlayerCurrentPower == 50)
+        {
+            CanTP = true;
+        }
     }
 }

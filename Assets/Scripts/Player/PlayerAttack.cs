@@ -17,15 +17,19 @@ public class PlayerAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (!GameManager.Instance.pause)
         {
-            var soundEffect = Random.Range(0f, 101.0f);
-            if (soundEffect <= 10)
+            if (Input.GetMouseButtonDown(1))
             {
-                SoundManagerScript.PlaySound(SoundManagerScript.SoundType.fire);
+                var soundEffect = Random.Range(0f, 101.0f);
+                if (soundEffect <= 10)
+                {
+                    SoundManagerScript.PlaySound(SoundManagerScript.SoundType.fire);
+                }
+                Fire();
             }
-            Fire();
         }
+        
     }
     public void Fire()
     {
