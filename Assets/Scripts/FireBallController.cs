@@ -36,7 +36,7 @@ public class FireBallController : MonoBehaviour
             ExplosionCreation();
             Destroy(gameObject);
         }
-        if (collision.CompareTag("Boss"))
+        if (collision.CompareTag("FinalBoss"))
         {
             var enemy = collision.GetComponent<Boss>();
             enemy.SubstractDamage();
