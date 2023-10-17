@@ -1,5 +1,4 @@
 using System;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.WebSockets;
@@ -204,10 +203,7 @@ public class PlayerMovement : MonoBehaviour
     // Collisions function
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (other.transform.CompareTag("Sword"))
-        {
-            Debug.Log("Bajar Vida");
-        }
+
         if (other.transform.CompareTag("Boss"))
         {
             // Obtener la dirección desde el jugador al jefe solo en el eje X
@@ -516,9 +512,7 @@ public class PlayerMovement : MonoBehaviour
         animator.SetTrigger("Death");
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
         SoundManagerScript.PlaySound(SoundManagerScript.SoundType.Death);
-        this.GetComponent<CapsuleCollider2D>().enabled = false;
         StartCoroutine(passiveMe(0.5f));
-
         
     }
     public void CheckHP() {

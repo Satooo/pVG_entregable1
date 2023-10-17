@@ -10,7 +10,7 @@ public class Boss : MonoBehaviour
 
     private void Start() {
         EnemyHp = 100f;
-        //GameManager.Instance.AddObserverMainPlayer(PlayerDamage);
+        GameManager.Instance.AddObserverMainPlayer(PlayerDamage);
         
     }
     void Awake()

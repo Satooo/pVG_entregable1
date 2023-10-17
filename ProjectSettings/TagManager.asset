@@ -8,10 +8,6 @@ TagManager:
   - GameWall
   - Enemy
   - Boss
-  - Ground
-  - Block
-  - FinalBoss
-  - Sword
   layers:
   - Default
   - TransparentFX

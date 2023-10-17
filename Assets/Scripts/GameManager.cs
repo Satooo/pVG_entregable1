@@ -9,8 +9,6 @@ public class GameManager : MonoBehaviour
     public UnityAction<float> OnPlayerDamage;
     public UnityAction<float> OnPlayerPower;
     public UnityAction<float> OnEnemy1Damage;
-
-    public float BossSpeed = 3f;
     public static GameManager Instance { get; private set; }
     public bool pause = false;
     // Main player variables
